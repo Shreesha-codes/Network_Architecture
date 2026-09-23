@@ -19,11 +19,11 @@ public class Server {
         try {
             InputStream in = socket.getInputStream();
             OutputStream out = socket.getOutputStream();
-            
+
             while (!socket.isClosed()) {
                 Request req = parseRequest(in);
                 if (req == null) {
-                    break; 
+                    break;
                 }
 
                 if (!req.hasHostHeader) {
@@ -50,7 +50,8 @@ public class Server {
                     }
                 }
 
-                if (!endpoint.equals("/add") && !endpoint.equals("/sub") && !endpoint.equals("/mul") && !endpoint.equals("/div")) {
+                if (!endpoint.equals("/add") && !endpoint.equals("/sub") && !endpoint.equals("/mul")
+                        && !endpoint.equals("/div")) {
                     sendResponse(out, 404, "Not Found", "");
                     continue;
                 }
@@ -66,12 +67,18 @@ public class Server {
                     int result = 0;
 
                     switch (endpoint) {
-                        case "/add": result = a + b; break;
-                        case "/sub": result = a - b; break;
-                        case "/mul": result = a * b; break;
+                        case "/add":
+                            result = a + b;
+                            break;
+                        case "/sub":
+                            result = a - b;
+                            break;
+                        case "/mul":
+                            result = a * b;
+                            break;
                         case "/div":
                             if (b == 0) {
-                                sendResponse(out, 400, "Bad Request", "Division by zero");
+                                sendResponse(out, 400, "Bad Request", "you cant devide by zero");
                                 continue;
                             }
                             result = a / b;
@@ -98,7 +105,7 @@ public class Server {
         ByteArrayOutputStream headerBuffer = new ByteArrayOutputStream();
         int prev = -1, curr = -1, prev2 = -1, prev3 = -1;
         boolean foundEnd = false;
-        
+
         while ((curr = in.read()) != -1) {
             headerBuffer.write(curr);
             if (prev3 == '\r' && prev2 == '\n' && prev == '\r' && curr == '\n') {
@@ -110,15 +117,19 @@ public class Server {
             prev = curr;
         }
 
-        if (headerBuffer.size() == 0) return null;
-        if (!foundEnd) return null;
+        if (headerBuffer.size() == 0)
+            return null;
+        if (!foundEnd)
+            return null;
 
         String headerString = new String(headerBuffer.toByteArray(), "UTF-8");
         String[] lines = headerString.split("\r\n");
-        if (lines.length == 0) return null;
+        if (lines.length == 0)
+            return null;
 
         String[] requestLine = lines[0].split(" ");
-        if (requestLine.length < 3) return null;
+        if (requestLine.length < 3)
+            return null;
 
         Request req = new Request();
         req.method = requestLine[0];
@@ -145,7 +156,8 @@ public class Server {
             int read = 0;
             while (read < contentLength) {
                 int count = in.read(body, read, contentLength - read);
-                if (count == -1) break;
+                if (count == -1)
+                    break;
                 read += count;
             }
         }
@@ -153,14 +165,22 @@ public class Server {
         return req;
     }
 
-    private static void sendResponse(OutputStream out, int statusCode, String statusText, String body) throws IOException {
+    private static void sendResponse(OutputStream out, int statusCode, String statusText, String body)
+            throws IOException {
+        
+        String finalBody = body;
+        if (statusCode >= 400) {
+            finalBody = "<h1>" + statusCode + " " + statusText + "</h1><p>" + body + "</p>";
+        }
+
         StringBuilder response = new StringBuilder();
         response.append("HTTP/1.1 ").append(statusCode).append(" ").append(statusText).append("\r\n");
-        response.append("Content-Length: ").append(body.length()).append("\r\n");
+        response.append("Content-Length: ").append(finalBody.length()).append("\r\n");
+        response.append("Content-Type: text/html\r\n");
         response.append("Connection: keep-alive\r\n");
         response.append("\r\n");
-        response.append(body);
-        
+        response.append(finalBody);
+
         out.write(response.toString().getBytes("UTF-8"));
         out.flush();
     }
