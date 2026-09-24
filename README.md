@@ -59,3 +59,22 @@ While you were hanging up, the answer was "at EOF", for free. Now you must consu
 - Implement an idle timeout you can defend
 - Support chunked encoding
 - Take all six requests at once and answer in order (pipelining)
+
+## Output
+
+Here are the results of the operations:
+
+### Addition
+![Addition Output](images/add.png)
+
+### Subtraction
+![Subtraction Output](images/sub.png)
+
+### Multiplication
+![Multiplication Output](images/mul.png)
+
+### Division
+![Division Output](images/div.png)
+
+### Error Handling (Divide by Zero)
+![Divide by Zero Error](images/div_by_zero.png)
